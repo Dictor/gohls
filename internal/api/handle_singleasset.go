@@ -8,12 +8,10 @@ import (
 	"net/http"
 	"path"
 	"strings"
+	"io/ioutil"
 
-	rice "github.com/GeertJohan/go.rice"
 	log "github.com/sirupsen/logrus"
 )
-
-var staticBox = rice.MustFindBox("../../ui/build")
 
 type singleAssetHandler struct {
 	path string
@@ -24,10 +22,10 @@ func NewSingleAssetHandler(path string) *singleAssetHandler {
 }
 
 func (s *singleAssetHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	data, err := staticBox.Bytes(strings.TrimLeft(r.URL.Path, "/"))
+	data, err := ioutil.ReadFile(strings.TrimLeft(r.URL.Path, "/"))
 	if err != nil {
 		log.Debugf("SPA HTTP handling fallback")
-		data, err := staticBox.Bytes(s.path)
+		data, err := ioutil.ReadFile(s.path)
 		if err != nil {
 			http.NotFound(w, r)
 			fmt.Fprintf(w, "Not found %v", s.path)
